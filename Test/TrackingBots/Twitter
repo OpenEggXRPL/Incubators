@@ -1,0 +1,53 @@
+import tweepy
+
+# Twitter API credentials
+consumer_key = "YOUR_CONSUMER_KEY"
+consumer_secret = "YOUR_CONSUMER_SECRET"
+access_token = "YOUR_ACCESS_TOKEN"
+access_token_secret = "YOUR_ACCESS_TOKEN_SECRET"
+
+# Twitter accounts to track
+target_accounts = ["account1", "account2", "account3"]
+
+# Authenticate with Twitter API
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth)
+
+# Function to track interactions
+def track_interactions():
+    # Create a stream listener
+    listener = MyStreamListener()
+
+    # Create a stream object using the authenticated API
+    stream = tweepy.Stream(auth=api.auth, listener=listener)
+
+    # Filter the stream based on the target accounts
+    stream.filter(track=target_accounts, is_async=True)
+
+# Custom stream listener to process incoming tweets
+class MyStreamListener(tweepy.StreamListener):
+    def on_status(self, status):
+        print(f"New tweet from {status.author.screen_name}: {status.text}")
+
+        # Check if the tweet is a mention
+        if any(account.lower() in status.text.lower() for account in target_accounts):
+            print("Mention detected!")
+
+        # Check if the tweet is a retweet
+        if hasattr(status, "retweeted_status"):
+            print("Retweet detected!")
+
+        # Check if the tweet is a reply
+        if status.in_reply_to_screen_name is not None:
+            print("Reply detected!")
+
+    def on_error(self, status_code):
+        if status_code == 420:
+            # Returning False in on_data disconnects the stream
+            return False
+        else:
+            print(f"Error occurred: {status_code}")
+
+# Run the tracking function
+track_interactions()
