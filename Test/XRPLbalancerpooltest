@@ -1,0 +1,80 @@
+const RippleAPI = require('ripple-lib').RippleAPI;
+const api = new RippleAPI();
+
+const poolOwner = 'rPoolOwnerAddress'; // Replace with the pool owner's XRPL address
+const token1 = 'Token1'; // Replace with the first token's code
+const token2 = 'Token2'; // Replace with the second token's code
+
+// Connect to the XRPL network
+api.connect().then(() => {
+  // Create a trust line for the pool owner for Token1
+  const trustLine1 = {
+    currency: token1,
+    limit: '100000', // Set an initial limit for Token1
+    ripplingDisabled: true,
+    account: poolOwner
+  };
+
+  // Create a trust line for the pool owner for Token2
+  const trustLine2 = {
+    currency: token2,
+    limit: '100000', // Set an initial limit for Token2
+    ripplingDisabled: true,
+    account: poolOwner
+  };
+
+  // Submit the trust line transactions to the XRPL
+  return Promise.all([
+    api.prepareTrustline(poolOwner, trustLine1),
+    api.prepareTrustline(poolOwner, trustLine2)
+  ]);
+}).then(preparedTransactions => {
+  // Sign and submit the trust line transactions
+  return Promise.all([
+    api.sign(preparedTransactions[0], 'rPoolOwnerPrivateKey'),
+    api.sign(preparedTransactions[1], 'rPoolOwnerPrivateKey')
+  ]);
+}).then(signedTransactions => {
+  // Submit the signed trust line transactions to the XRPL
+  return Promise.all([
+    api.submit(signedTransactions[0]),
+    api.submit(signedTransactions[1])
+  ]);
+}).then(submittedTransactions => {
+  // Verify the trust line transaction results
+  console.log('Trust line transaction 1:', submittedTransactions[0]);
+  console.log('Trust line transaction 2:', submittedTransactions[1]);
+
+  // Create an offer to provide liquidity in the balancer pool
+  const offer = {
+    direction: 'Sell',
+    quantity: '100', // Set the quantity of Token1 to provide
+    totalPrice: '50', // Set the total price in Token2 for the provided quantity
+    account: poolOwner,
+    takerGets: {
+      currency: token2,
+      value: '50'
+    },
+    takerPays: {
+      currency: token1,
+      value: '100'
+    }
+  };
+
+  // Submit the offer to the XRPL
+  return api.prepareOrder(poolOwner, offer);
+}).then(preparedOffer => {
+  // Sign and submit the offer transaction
+  return api.sign(preparedOffer, 'rPoolOwnerPrivateKey');
+}).then(signedOffer => {
+  // Submit the signed offer transaction to the XRPL
+  return api.submit(signedOffer);
+}).then(submittedOffer => {
+  // Verify the offer transaction result
+  console.log('Offer transaction:', submittedOffer);
+
+  // Disconnect from the XRPL
+  return api.disconnect();
+}).catch(error => {
+  console.error('Error:', error);
+});
