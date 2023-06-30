@@ -1,0 +1,23 @@
+import feedparser
+
+# Medium RSS feed URL
+rss_url = "https://medium.com/feed/your-medium-username"
+
+# Function to retrieve and process Medium articles
+def track_medium_articles():
+    feed = feedparser.parse(rss_url)
+
+    # Iterate over the entries in the feed
+    for entry in feed.entries:
+        article_title = entry.title
+        article_link = entry.link
+        published_date = entry.published
+
+        # Process the article data as needed
+        print("Title:", article_title)
+        print("Link:", article_link)
+        print("Published Date:", published_date)
+        print("---------------------------------------")
+
+# Run the tracking function
+track_medium_articles()
