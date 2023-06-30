@@ -1,0 +1,64 @@
+{
+  "Account": "rContractAccount",    // The contract account address
+
+  "Variables": [
+    {
+      "Name": "IndexValue",         // Variable to track the index value
+      "Type": "Currency",
+      "DefaultValue": "0"
+    },
+    {
+      "Name": "Composition",        // Variable to store the index composition
+      "Type": "Object",
+      "DefaultValue": "{}"
+    }
+    // Add more variables as needed for weights, historical data, etc.
+  ],
+
+  "Methods": [
+    {
+      "Name": "UpdateIndexValue",    // Method to update the index value based on price data
+      "Parameters": [
+        {
+          "Name": "PriceData",
+          "Type": "Object"
+        }
+      ],
+      "Script": "..."                // Script logic to calculate the index value
+    },
+    {
+      "Name": "AdjustComposition",   // Method to adjust the composition of the index
+      "Parameters": [
+        {
+          "Name": "NewComposition",
+          "Type": "Object"
+        }
+      ],
+      "Script": "..."                // Script logic to adjust the index composition
+    }
+    // Add more methods for other functionality (e.g., rebalancing, adding/removing assets)
+  ],
+
+  "Events": [
+    {
+      "Name": "IndexValueUpdated",    // Event triggered when the index value is updated
+      "Parameters": [
+        {
+          "Name": "NewIndexValue",
+          "Type": "Currency"
+        }
+      ]
+    },
+    {
+      "Name": "CompositionAdjusted",  // Event triggered when the index composition is adjusted
+      "Parameters": [
+        {
+          "Name": "NewComposition",
+          "Type": "Object"
+        }
+      ]
+    }
+    // Add more events as needed
+  ]
+}
+
