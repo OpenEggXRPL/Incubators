@@ -1,0 +1,90 @@
+onst { XrpClient, XrplNetwork, Wallet } = require('xrpl.js');
+
+// Create an XRP Ledger client
+const client = new XrpClient('https://s.altnet.rippletest.net:51234'); // Testnet URL, replace with mainnet URL when deploying
+
+// Set the wallet details
+const walletAddress = 'rYourWalletAddress';
+const walletSecret = 'YourWalletSecret';
+
+// Define the index fund composition
+const indexComposition = [
+  { currency: 'XRP', weight: 0.5 },       // Example composition: 50% XRP
+  { currency: 'BTC', weight: 0.3 },       // 30% BTC
+  { currency: 'ETH', weight: 0.2 }        // 20% ETH
+];
+
+// Function to calculate the index value
+async function calculateIndexValue() {
+  let indexValue = 0;
+
+  for (const asset of indexComposition) {
+    const ticker = `${asset.currency}/USD`; // Assuming USD as the base currency for simplicity
+
+    // Fetch the current price of the asset from an external API or data source
+    const price = await fetchPriceFromAPI(ticker);
+
+    // Calculate the weighted value of the asset
+    const weightedValue = price * asset.weight;
+
+    // Add the weighted value to the index value
+    indexValue += weightedValue;
+  }
+
+  return indexValue;
+}
+
+// Function to fetch the current price of an asset from an API (replace with your implementation)
+async function fetchPriceFromAPI(ticker) {
+  // Implement the logic to fetch the price of the asset from an external API
+  // You can use libraries like Axios or fetch to make HTTP requests
+  // Parse the response and return the price as a numeric value
+}
+
+// Function to update the index value on the XRP Ledger
+async function updateIndexValue(indexValue) {
+  // Create a transaction to update the index value in a memo field
+  const transaction = {
+    TransactionType: 'Payment',
+    Account: walletAddress,
+    Destination: walletAddress,
+    Amount: {
+      currency: 'USD',
+      value: indexValue.toString(),
+      issuer: 'rMwjYedjc7qqtKYVLiAccJSmCwih4LnE2q' // Issuer account for USD on XRP Ledger
+    },
+    Memos: [
+      {
+        Memo: {
+          MemoType: 'IndexValue',
+          MemoData: indexValue.toString()
+        }
+      }
+    ]
+  };
+
+  // Sign the transaction with the wallet secret
+  const wallet = new Wallet(walletSecret);
+  const signedTransaction = wallet.sign(transaction);
+
+  // Submit the signed transaction to the XRP Ledger
+  await client.submit(signedTransaction);
+}
+
+// Main function to update the index value and submit it to the XRP Ledger
+async function main() {
+  try {
+    // Calculate the updated index value
+    const newIndexValue = await calculateIndexValue();
+
+    // Update the index value on the XRP Ledger
+    await updateIndexValue(newIndexValue);
+
+    console.log('Index value updated successfully:', newIndexValue);
+  } catch (error) {
+    console.error('Error updating index value:', error);
+  }
+}
+
+// Run the main function
+main();
