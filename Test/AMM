@@ -1,0 +1,39 @@
+import xrpl
+from xrpl.clients import JsonRpcClient
+from xrpl.models.transactions import OfferCreate
+
+# Configure XRPL client
+client = JsonRpcClient('https://s.altnet.rippletest.net:51234')  # Use the appropriate XRPL server
+
+# Set your wallet information
+wallet_address = 'YOUR_WALLET_ADDRESS'
+wallet_secret = 'YOUR_WALLET_SECRET'
+
+# Set trading parameters
+base_currency = 'XRP'  # Base currency code
+quote_currency = 'USD'  # Quote currency code
+buy_quantity = 100  # Quantity to buy
+buy_price = 0.5  # Buy price in quote currency
+
+def create_offer(wallet_address, base_currency, quote_currency, buy_quantity, buy_price):
+    # Prepare OfferCreate transaction
+    offer = OfferCreate(
+        account=wallet_address,
+        taker_pays=f'{buy_quantity} {base_currency}',
+        taker_gets=f'{buy_quantity * buy_price} {quote_currency}',
+        fee='10',
+        sequence=0,  # Set appropriate sequence number
+    )
+
+    # Sign the transaction
+    signed_offer = offer.sign(wallet_secret)
+
+    # Submit the transaction to XRPL
+    response = client.submit(signed_offer)
+
+    # Return transaction result
+    return response
+
+# Execute the trading bot
+response = create_offer(wallet_address, base_currency, quote_currency, buy_quantity, buy_price)
+print(response)
